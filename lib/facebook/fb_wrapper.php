@@ -36,7 +36,7 @@ if(!class_exists("APS_FB_Wrapper")){
                     // Proceed knowing you have a logged in user who's authenticated.
                         return $this->FB_lib->api('/me');
                     } catch (FacebookApiException $e) {
-                        var_dump($e);exit;
+                        error_log($e);exit;
                         $user = null;
                     }
             }
@@ -67,16 +67,23 @@ if(!class_exists("APS_FB_Wrapper")){
         }
 
         public function post_in_wall($args=array()){
+        	if($args['profile_type']=="page"){
+        		try {
+	            $page_info = $this->FB_lib->api("/".$args['profile_id']."?fields=access_token");
+	            if( !empty($page_info['access_token']) ) {
+	                $fb_args = array(
+	                'access_token'  => $page_info['access_token'],
+	                );
+	            }
+	            } catch (FacebookApiException $e) {
+	                error_log($e);
+	                $user = null;
+	            }
+        	}
             try {
-            #$page_id = get_option("wen_social_fb_post_to");
-            $page_info = $this->FB_lib->api("/".$args['profile_id']."?fields=access_token");
-            if( !empty($page_info['access_token']) ) {
-                $fb_args = array(
-                'access_token'  => $page_info['access_token'],
-                'message'       => $args['message']
-                );
+                $fb_args['message']=$args['message'];
                 $post_id = $this->FB_lib->api("/".$args['profile_id']."/feed","post",$fb_args);
-            }
+
             } catch (FacebookApiException $e) {
                 error_log($e);
                 $user = null;

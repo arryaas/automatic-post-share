@@ -45,27 +45,18 @@ if(!class_exists('APS_Custom_Fields'))
                 $APS_social_fb_it_to = get_post_meta($post->ID, 'APS_social_fb_it_to', true);
                 echo '<div class="misc-pub-section misc-pub-post-status"><span id="post-status-display">'.(($_APS_social_fb_it=="1")?"Posted":"Not Posted")." on : </span>  Facebook.</div>";
                 if($_APS_social_fb_it=="1")
-                echo '<div class="misc-pub-section misc-pub-post-status"><span id="post-status-display">Posted On : </span>';
-                $profile_count = 1;
-                foreach ($APS_social_fb_it_to as $fb_user) {
-                    $profile_info = $this->facebook->get_user($fb_user);
-                    echo $profile_info['name'];
-                    if($profile_count<count($APS_social_fb_it_to))
-                        echo ",";
-                    $profile_count++;
-                }
-                echo '</div>';
+                echo '<div class="misc-pub-section misc-pub-post-status"><span id="post-status-display">Posted On : </span><a href="">View Logs</a></div>';
                 return;
             }
             echo '<input type="checkbox" name="APS_social_fb_it" id="APS_social-fb-it" class="post-format" value="1" checked/>';
             echo '<label for="APS_social-fb-it"> Post in Facebook</label><br/>';   
-            $fb_users = get_option("APS_FB_profile_ids");
-            if($fb_users){
+
+            $fb_pages = $this->facebook->get_pages(array("include_user"=>1));
+            if($fb_pages){
                 echo "<select multiple name='APS_social_fb_it_to[]' id='APS_social_fb_it_to'>";
-                foreach ($fb_users as $fb_user) {
-                    $profile_info = $this->facebook->get_user($fb_user);
-                    echo "<option selected value='".$fb_user."'>".$profile_info['name']."</option>";
-                }
+                foreach ($fb_pages as $key=>$val) {
+                echo '<option value="'.$val['id'].'" selected>'.ucfirst($val['name']).'</option>';
+                }  
                 echo "</select>";
             }
         }
@@ -94,8 +85,10 @@ if(!class_exists('APS_Custom_Fields'))
                     $fb_message = $post_data->post_title." ".get_permalink($post_org_id);
                     $fb_users = $_POST['APS_social_fb_it_to'];
                     if($fb_users){
+                        $get_profile_data = get_option("APS_FB_profile_data");
                         foreach ($fb_users as $fb_user) {
-                            $this->facebook->post_in_wall(array("profile_id"=>$fb_user,"message"=>$fb_message));
+                            $arguments = array("profile_id"=>$fb_user,"message"=>$fb_message,"profile_type"=>(($fb_user==$get_profile_data['id'])?"user":"page"));
+                            $this->facebook->post_in_wall($arguments);
                         }
                     }                    
                 }

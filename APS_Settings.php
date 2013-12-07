@@ -101,7 +101,17 @@ if(!class_exists("APS_Settings")){
 		} # END Function : admin_init
 
 		public function APS_settings_section(){
-			
+			$user_id = get_option("APS_FB_profile_data");
+			try {
+				$user_data =  $this->FB_lib->api('/'.$user_id['id']);
+			} catch (FacebookApiException $e) {
+				unregister_setting("APS_Setting-group","APS_FB_profile_ids");
+				delete_option("APS_FB_profile_ids");
+				unregister_setting("APS_Setting-group","APS_FB_profile_data");
+				delete_option("APS_FB_profile_data");
+				echo "<a href=''>Error: Please Reload The Page.</a>";
+				return false;
+			}
 		} # END Function : APS_settings_section
 
 		public function APS_settings_FB_section(){
