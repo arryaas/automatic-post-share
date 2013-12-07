@@ -19,4 +19,4 @@ Currently this plugin only supports Facebook share, We will be adding other soci
 1. Upload \\\\\\\\\\\\\\\"automatic-post-share\\\\\\\\\\\\\\\" to the \\\\\\\\\\\\\\\"/wp-content/plugins/\\\\\\\\\\\\\\\" directory.
 1. Activate the plugin through the \\\\\\\\\\\\\\\"Plugins\\\\\\\\\\\\\\\" menu in WordPress.
 1. Go Settings>APS Settings and choose post types and provide Facebook app id and Facebook secret key.
-1. Add New Post or any post type you have chosen. In left side you will see options to share.
+1. Add New Post or any post type you have chosen. In Right side you will see options to share.
