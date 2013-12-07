@@ -1,4 +1,5 @@
 <?php
+# Check if class already exits
 if(!class_exists("APS_Settings")){
 	/**
 	* Class : APS_Settings
@@ -8,6 +9,7 @@ if(!class_exists("APS_Settings")){
 		
 		public function __construct(array $args=null)
 		{
+			#Access Facebook Function
 			$this->facebook= $args['facebook'];
 			
 			# Register actions
@@ -20,8 +22,6 @@ if(!class_exists("APS_Settings")){
 			register_setting("APS_Setting-group","APS_post_types");
 			register_setting("APS_Setting-group","APS_FB_app_id");
 			register_setting("APS_Setting-group","APS_FB_secret_key");
-			if(get_option("APS_FB_profile_ids"))
-				register_setting("APS_Setting-group","APS_FB_profile_ids");
 
 			if(isset($_GET['code']) and $_GET['code']!=""){
 					$user_data = $this->facebook->get_user();
@@ -62,18 +62,6 @@ if(!class_exists("APS_Settings")){
 			);
 
 			add_settings_field(
-				"APS_FB_secret_key-field",
-				"Facebook Secret Key",
-				array(&$this,"settings_field_input_text"),
-				"aps-setting",
-				"APS_Setting-section",
-				array(
-					"field"=>"APS_FB_secret_key",
-					"label_for"=>"APS_FB_secret_key"
-				)
-			);
-
-			add_settings_field(
 				"APS_FB_app_id-field",
 				"Facebook App Id",
 				array(&$this,"settings_field_input_text"),
@@ -85,33 +73,22 @@ if(!class_exists("APS_Settings")){
 				)
 			);
 
-			if(""!=get_option("APS_FB_secret_key") and ""!=get_option("APS_FB_app_id") and $get_APS_FB_profile_ids){
-				add_settings_field(
-					"APS_FB_profile_ids-field",
-					"FB Profile & Pages to Share With",
-					array(&$this,"settings_field_select_fb_profile"),
-					"aps-setting",
-					"APS_Setting-section",
-					array(
-						"field"=>"APS_FB_profile_ids",
-						"label_for"=>"APS_FB_profile_ids"
-					)
-				);
-			}
+			add_settings_field(
+				"APS_FB_secret_key-field",
+				"Facebook Secret Key",
+				array(&$this,"settings_field_input_text"),
+				"aps-setting",
+				"APS_Setting-section",
+				array(
+					"field"=>"APS_FB_secret_key",
+					"label_for"=>"APS_FB_secret_key"
+				)
+			);
 		} # END Function : admin_init
 
 		public function APS_settings_section(){
-			$user_id = get_option("APS_FB_profile_data");
-			try {
-				$user_data =  $this->FB_lib->api('/'.$user_id['id']);
-			} catch (FacebookApiException $e) {
-				unregister_setting("APS_Setting-group","APS_FB_profile_ids");
-				delete_option("APS_FB_profile_ids");
-				unregister_setting("APS_Setting-group","APS_FB_profile_data");
-				delete_option("APS_FB_profile_data");
-				echo "<a href=''>Error: Please Reload The Page.</a>";
-				return false;
-			}
+			if(!$this->facebook->check_status())
+                echo "<a href=''>Error: Please Reload The Page.</a>";
 		} # END Function : APS_settings_section
 
 		public function APS_settings_FB_section(){
@@ -136,25 +113,7 @@ if(!class_exists("APS_Settings")){
 					echo '<option value="'.$key.'" '.((in_array($key,$value))?"selected":"").'>'.ucfirst($post_type).'</option>';
 			}
 			echo "</select>";
-		}
-
-		public function settings_field_select_fb_profile($args){
-            $fb_pages = $this->facebook->get_pages(array("include_user"=>1));
-            if(!$fb_pages){
-            	$this->APS_settings_FB_section();
-            	return false;
-            }
-            # Get the field name from the $args array
-            $field = $args['field'];
-            # Get the value of this setting
-            $value = get_option($field);
-
-            echo sprintf("<select name='%s[]' id='%s' multiple>",$field,$field);
-            foreach ($fb_pages as $key=>$val) {
-                echo '<option value="'.$val['id'].'" '.((in_array($val['id'],$value))?"selected='selected'":"").'>'.ucfirst($val['name']).'</option>';
-            }            
-            echo "</select>";
-        } # END Function : 
+		} # END Function : settings_field_select_post_type
 
 		public function add_menu(){
 			add_options_page(
